@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+
+      <!-- タイトル部分 -->
+      <div class="text-center mb-4">
+        <span class="badge rounded-pill text-bg-primary mb-2">ことばナビ</span>
+        <h1 class="h4 fw-bold mb-1">テキスト案内</h1>
+        <p class="text-muted mb-0">
+          1ステップずつ、ことばで道順をお伝えします。
+        </p>
+      </div>
+
+      <!-- サマリーカード -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-muted small mb-1">合計距離</p>
+            <p class="fw-semibold mb-0">
+              {{ (text_navigation.total_distance_m / 1000) | round(2) }} km
+            </p>
+          </div>
+          <div class="border-start mx-3" style="height: 32px; opacity:.2;"></div>
+          <div>
+            <p class="text-muted small mb-1">所要時間</p>
+            <p class="fw-semibold mb-0">
+              約 {{ (text_navigation.total_duration_s / 60) | round(0) }} 分
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- テキスト案内カード -->
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+
+          <!-- ステップ表示部分 -->
+          <div id="text-navigation" class="mb-3">
+            <!-- JSで差し込まれる -->
+          </div>
+
+          <!-- ステップ操作ボタン -->
+          <div class="d-flex justify-content-between mt-3">
+            <button id="prev-step" class="btn btn-outline-secondary" type="button">
+              前に戻る
+            </button>
+            <button id="next-step" class="btn btn-primary" type="button">
+              次に進む
+            </button>
+          </div>
+
+          <!-- 補足テキスト -->
+          <p class="text-muted small text-center mt-3 mb-0">
+            ※ 歩きながらのスマホ操作は危険です。安全な場所に立ち止まってご確認ください。
+          </p>
+        </div>
+      </div>
+
+      <!-- 地図や再設定への導線 -->
+      <div class="mt-4">
+        <div class="d-grid gap-2">
+          <button
+            id="show-map"
+            onclick="location.href='{{ url_for('navigation.show_map') }}'"
+            class="btn btn-outline-primary"
+            type="button"
+          >
+            現在地周辺の地図を表示する
+          </button>
+          <button
+            onclick="location.href='{{ url_for('navigation.navigation') }}'"
+            class="btn btn-outline-secondary"
+            type="button"
+          >
+            目的地を設定し直す
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ステップを表示するためのスクリプト -->
+<script>
+  const steps = {{ text_navigation.steps | tojson }};
+  let currentIndex = 0;
+
+  function renderStep() {
+    const step = steps[currentIndex];
+    const container = document.getElementById("text-navigation");
+
+    // 進捗（％）も軽く表示
+    const progressPercent = Math.round(((currentIndex + 1) / steps.length) * 100);
+
+    container.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="badge rounded-pill text-bg-primary">
+          ステップ ${currentIndex + 1} / ${steps.length}
+        </span>
+        <small class="text-muted">進捗：${progressPercent}%</small>
+      </div>
+
+      <p class="fw-semibold mb-2">
+        ${step.instruction}
+      </p>
+      <p class="text-muted small mb-3">
+        この区間は約 <span class="fw-semibold">${step.distance_m} m</span> です。
+      </p>
+
+      <div class="progress" style="height: 6px;">
+        <div
+          class="progress-bar"
+          role="progressbar"
+          style="width: ${progressPercent}%;"
+          aria-valuenow="${progressPercent}"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        ></div>
+      </div>
+    `;
+
+    document.getElementById("prev-step").disabled = currentIndex === 0;
+    document.getElementById("next-step").disabled = currentIndex >= steps.length - 1;
+  }
+
+  document.getElementById("prev-step").addEventListener("click", () => {
+    if (currentIndex > 0) {
+      currentIndex -= 1;
+      renderStep();
+    }
+  });
+
+  document.getElementById("next-step").addEventListener("click", () => {
+    if (currentIndex < steps.length - 1) {
+      currentIndex += 1;
+      renderStep();
+    }
+  });
+
+  // 初期表示
+  renderStep();
+</script>
+
+{% endblock %}

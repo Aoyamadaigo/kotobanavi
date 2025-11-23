@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+
+      <!-- タイトル部分 -->
+      <div class="text-center mb-4">
+        <span class="badge rounded-pill text-bg-primary mb-2">ことばナビ</span>
+        <h1 class="h3 fw-bold mb-1">コトバなび</h1>
+        <p class="text-muted mb-0">
+          現在地と言葉の案内で、やさしく目的地までお連れします。
+        </p>
+      </div>
+
+      <!-- メインカード -->
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+
+          <!-- ステップガイド（上部のインジケーター） -->
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center">
+              <span class="badge rounded-circle text-bg-primary me-2">1</span>
+              <small class="fw-semibold text-muted">現在地を取得</small>
+            </div>
+            <div class="flex-grow-1 mx-2 border-top" style="opacity: .25;"></div>
+            <div class="d-flex align-items-center">
+              <span class="badge rounded-circle text-bg-secondary me-2">2</span>
+              <small class="fw-semibold text-muted">目的地を入力</small>
+            </div>
+            <div class="flex-grow-1 mx-2 border-top" style="opacity: .25;"></div>
+            <div class="d-flex align-items-center">
+              <span class="badge rounded-circle text-bg-secondary me-2">3</span>
+              <small class="fw-semibold text-muted">案内を開始</small>
+            </div>
+          </div>
+
+          <!-- Step1 -->
+          <div class="mb-4">
+            <p class="small text-uppercase text-muted mb-1">Step 1</p>
+            <h2 class="h6 fw-semibold mb-2">現在地を取得する</h2>
+            <p class="text-muted small mb-3">
+              まずは、今いる場所を取得します。ボタンを押すとブラウザが位置情報の許可を求めます。
+            </p>
+            <button
+              id="locate-btn"
+              class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
+              type="button"
+            >
+              <i class="bi bi-geo-alt-fill"></i>
+              現在地を取得する
+            </button>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Step2 -->
+          <div class="mb-4">
+            <p class="small text-uppercase text-muted mb-1">Step 2</p>
+            <h2 class="h6 fw-semibold mb-2">目的地を入力する</h2>
+            <p class="text-muted small mb-3">
+              行き先の「駅名・施設名・住所」などを入力してください。
+            </p>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-flag"></i>
+              </span>
+              <input
+                type="text"
+                id="destination"
+                class="form-control"
+                placeholder="例：東京駅・〇〇カフェ・〇〇市役所"
+                required
+              >
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Step3 -->
+          <div class="mb-1">
+            <p class="small text-uppercase text-muted mb-1">Step 3</p>
+            <h2 class="h6 fw-semibold mb-2">案内を開始する</h2>
+            <p class="text-muted small mb-3">
+              現在地と目的地の準備ができたら、案内を開始してください。
+            </p>
+            <button
+              id="make-navigation"
+              class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2"
+              type="button"
+            >
+              <i class="bi bi-play-circle"></i>
+              案内を開始する
+            </button>
+          </div>
+
+          <p class="text-muted text-center small mt-3 mb-0">
+            ※ 通信状況や位置情報の精度により、案内が前後する場合があります。
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 自作モジュール -->
+<script type="module" src="{{ url_for('navigation.static', filename='js/main.js') }}"></script>
+
+<!-- Google Maps API -->
+<script
+  src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}"
+  async defer>
+</script>
+
+{% endblock %}

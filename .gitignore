@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+
+# SQLite DB
+*.db
+
+# venv
+venv/
+.venv/
+
+# env
+.env/
+
+# Flask instance folder (if not needed)
+instance/
+
+# VSCodeなどIDE
+.vscode/
+
+# migrationsのpycache
+migrations/__pycache__/
