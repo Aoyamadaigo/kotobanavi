@@ -7,5 +7,9 @@ app.py/create_appで登録して使用する
 """
 from flask import Blueprint
 
-bp = Blueprint('navigation', __name__, url_prefix="/navigation", template_folder="templates",static_folder="static")
+bp = Blueprint('navigation',
+               __name__, 
+               url_prefix="", 
+               template_folder="templates",
+               static_folder="static")
 from . import save_current_location, save_destination, view_navigation,show_map,show_text_navigation,save_navigation
