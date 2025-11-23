@@ -48,7 +48,7 @@ export function createTextDirections(originLatLng, destination) {
       // console.log("textNavigation:",textNavigation)
 
       // ここで保存が終わったら resolve
-      sendFlasktoServer(textNavigation, "/navigation/api/save_text_navigation")
+      sendFlasktoServer(textNavigation, "/api/save_text_navigation")
         .then(() => resolve(textNavigation))
         .catch(reject);
     });

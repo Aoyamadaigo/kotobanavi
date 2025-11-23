@@ -49,18 +49,18 @@ export function setupApp() {
 
         //取得した目的地の情報をサーバーに送る（セッションに保存）
         const destinationLatLng = await convertLocation(destination)
-        await sendFlasktoServer(destinationLatLng, "/navigation/api/destination") //←成功
+        await sendFlasktoServer(destinationLatLng, "/api/destination")
 
         try {
             await createTextDirections(userLatLng, destinationLatLng);
-            window.location.href = "/navigation/text_navigation";
+            window.location.href = "/text_navigation";
         } catch (err) {
             console.error(err);
             alert("案内の作成に失敗しました");
         }
 
         // データ送信が終わったらテキスト案内ページへ遷移
-        window.location.href = "/navigation/text_navigation";
+        window.location.href = "/text_navigation";
     });
 }
 

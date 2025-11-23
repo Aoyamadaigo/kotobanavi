@@ -75,13 +75,8 @@
   const destination = {{ destination | tojson }};
 </script>
 
-<!-- 現在地周辺の地図を表示するモジュール -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}" async></script>
 <script type="module" src="{{ url_for('navigation.static', filename='js/initMap.js') }}"></script>
 
-<!-- Google Maps 本体 -->
-<script
-  src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&callback=initMap"
-  async defer
-></script>
 
 {% endblock %}

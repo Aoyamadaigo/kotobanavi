@@ -11,5 +11,6 @@ bp = Blueprint('navigation',
                __name__, 
                url_prefix="", 
                template_folder="templates",
-               static_folder="static")
+               static_folder="static",
+               static_url_path="/navigation/static")
 from . import save_current_location, save_destination, view_navigation,show_map,show_text_navigation,save_navigation

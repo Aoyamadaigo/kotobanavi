@@ -32,7 +32,7 @@ export function getCurrentLocation() {
                     const userLatLng = { lat, lng };
 
                     //取得した現在地の情報をサーバーに送る（→セッションに保存）
-                    sendFlasktoServer(userLatLng,"/navigation/api/current_location")
+                    sendFlasktoServer(userLatLng,"/api/current_location")
 
                     // 取得した位置情報を呼び出し元に返す
                     resolve(userLatLng);
