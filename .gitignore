@@ -10,7 +10,7 @@ venv/
 .venv/
 
 # env
-.env/
+.env
 
 # Flask instance folder (if not needed)
 instance/
