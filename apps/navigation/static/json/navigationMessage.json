@@ -1,0 +1,40 @@
+{
+  "maneuver": {
+    "turn-right": "右に曲がる→",
+    "turn-left": "左に曲がる←",
+    "turn-slight-right": "ななめ右に進む↗",
+    "turn-slight-left": "ななめ左に進む↖",
+    "turn-sharp-right": "鋭角に右に曲がる↘",
+    "turn-sharp-left": "鋭角に左に曲がる↙",
+
+    "straight": "そのまま直進する",
+    "continue": "そのまま直進する",
+
+    "uturn-left": "左にUターンする",
+    "uturn-right": "右にUターンする",
+
+    "arrive-left": "目的地は左側です",
+    "arrive-right": "目的地は右側です",
+    "arrive-straight": "目的地は前方です"
+  },
+  "keywords": [
+    { "match": "横断歩道",        "text": "横断歩道を渡る" },
+    { "match": "交差点",          "text": "交差点まで進む" },
+
+    { "match": "やや右方向",      "text": "ななめ右に進む↗" },
+    { "match": "やや左方向",      "text": "ななめ左に進む↖" },
+
+    { "match": "そのまま進む",    "text": "そのまま直進する↑" },
+    { "match": "道なりに進む",    "text": "そのまま直進する↑" },
+    { "match": "直進する",        "text": "そのまま直進する↑" },
+    { "match": "まっすぐ進む",    "text": "そのまま直進する↑" },
+
+    { "match": "左側の道に入る",  "text": "左側に見える道を進む←" },
+    { "match": "右側の道に入る",  "text": "右側に見える道を進む→" },
+
+    { "match": "右折する",        "text": "右に曲がる→" },
+    { "match": "左折する",        "text": "左に曲がる←" }
+  ],
+
+  "fallback": "案内に従って進む"
+}
