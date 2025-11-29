@@ -7,7 +7,7 @@ DirectionsService を使って「テキストの案内」を作るだけのモ�
 import { sendFlasktoServer } from "./sendFlaskToServer.js";
 import { getNavigationText } from "./getNavigationText.js";
 
-export function createTextDirections(originLatLng, destination) {
+export function createTextDirections(originLatLng, destination,v_user) {
   return new Promise((resolve, reject) => {
     if (!originLatLng) return reject(new Error("originLatLng が指定されていません"));
     if (!destination) return reject(new Error("destination が指定されていません"));
@@ -48,7 +48,7 @@ export function createTextDirections(originLatLng, destination) {
           const prevStep = steps[i - 1];
           const currentStep = steps[i];
 
-          const text = getNavigationText(prevStep, currentStep);
+          const text = getNavigationText(prevStep, currentStep,i,v_user,originLatLng);
 
           simpleSteps.push({
             instruction: text,

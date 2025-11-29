@@ -39,9 +39,9 @@ export function startLocationTracking(map, marker) {
             console.error("位置情報の取得に失敗しました: ", error);
         },
         {
-            enableHighAccuracy: true, // できるだけ高精度
-            maximumAge: 0,            // 古いキャッシュは使わない
-            timeout: 10000,           // 10秒でタイムアウト
+            enableHighAccuracy: true, 
+            maximumAge: 0,            
+            timeout: 10000,           
         }
     )
 }

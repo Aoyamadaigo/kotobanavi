@@ -6,6 +6,54 @@ import { convertLocation } from "/navigation/static/js/locationToLatLng.js";
 
 let userLatLng = null; // 
 
+let v_user = null;
+let lastGPS = null;
+let compassVector = null;
+
+// コンパス（スマホの向き）
+window.addEventListener("deviceorientationabsolute", (e) => {
+    const heading = e.alpha; // 0〜360°
+    if (heading == null) return;
+
+    compassVector = {
+        x: Math.sin((heading * Math.PI) / 180),
+        y: -Math.cos((heading * Math.PI) / 180),
+    };
+
+    // まだ動いていない間はコンパスをそのまま使う
+    if (!v_user) {
+        v_user = compassVector;
+    }
+});
+
+// GPS移動方向
+navigator.geolocation.watchPosition(
+    (pos) => {
+        const { latitude, longitude } = pos.coords;
+
+        if (lastGPS) {
+            const gpsVector = {
+                x: longitude - lastGPS.lng,
+                y: latitude - lastGPS.lat,
+            };
+
+            const moved =
+                Math.abs(gpsVector.x) > 0.0000005 ||
+                Math.abs(gpsVector.y) > 0.0000005;
+
+            // 実際に動いたら GPS の方向を優先
+            if (moved) {
+                v_user = gpsVector;
+            }
+        }
+
+        lastGPS = { lat: latitude, lng: longitude };
+    },
+    (err) => {
+        console.warn("watchPosition エラー:", err);
+    }
+);
+
 export function setupApp() {
     const locateBtn = document.getElementById("locate-btn");
     const navBtn = document.getElementById("make-navigation");
@@ -52,7 +100,7 @@ export function setupApp() {
         await sendFlasktoServer(destinationLatLng, "/api/destination")
 
         try {
-            await createTextDirections(userLatLng, destinationLatLng);
+            await createTextDirections(userLatLng, destinationLatLng,v_user);
             window.location.href = "/text_navigation";
         } catch (err) {
             console.error(err);
