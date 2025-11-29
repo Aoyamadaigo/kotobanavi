@@ -43,9 +43,6 @@
             <!-- JSで差し込まれる -->
           </div>
 
-          <p class="text-muted small text-center mt-3 mb-0">
-            ※ 進む方向に迷ったら、「現在地周辺の地図」を表示してね
-          </p>
           <!-- ステップ操作ボタン -->
           <div class="d-flex justify-content-between mt-3">
             <button id="prev-step" class="btn btn-outline-secondary" type="button">
@@ -56,29 +53,22 @@
             </button>
           </div>
 
-          <!-- 補足テキスト -->
-          <p class="text-muted small text-center mt-3 mb-0">
-            ※ 歩きながらのスマホ操作は危険です。安全な場所に立ち止まってご確認ください。
-          </p>
         </div>
       </div>
+
+      <!-- 拡大した地図を常に表示する -->
+      <div id="map" style="height: 300px; width: 100%; border-radius: .5rem;"></div>
+
 
       <!-- 地図や再設定への導線 -->
       <div class="mt-4">
         <div class="d-grid gap-2">
-          <button
-            id="show-map"
-            onclick="location.href='{{ url_for('navigation.show_map') }}'"
-            class="btn btn-outline-primary"
-            type="button"
-          >
-            現在地周辺の地図を表示する
+          <button id="show-map" onclick="location.href='{{ url_for('navigation.show_map') }}'"
+            class="btn btn-outline-primary" type="button">
+            現在地周辺を大きく表示する
           </button>
-          <button
-            onclick="location.href='{{ url_for('navigation.navigation') }}'"
-            class="btn btn-outline-secondary"
-            type="button"
-          >
+          <button onclick="location.href='{{ url_for('navigation.navigation') }}'" class="btn btn-outline-secondary"
+            type="button">
             目的地を設定し直す
           </button>
         </div>
@@ -148,5 +138,16 @@
   // 初期表示
   renderStep();
 </script>
+
+<!-- サーバーから現在地と目的地を取得 -->
+<script>
+  const currentLocation = {{ current_location | tojson }};
+  const destination = {{ destination | tojson }};
+  window.mapZoom = 20
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}" async></script>
+<script type="module" src="{{ url_for('navigation.static', filename='js/initMap.js') }}"></script>
+
 
 {% endblock %}

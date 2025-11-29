@@ -9,8 +9,14 @@ from flask import render_template,session,abort,current_app
 
 @bp.get("/text_navigation")
 def show_text_navigation():
+    current_location = session.get("current_location")
+    destination = session.get("destination")
     api_key = current_app.config["GOOGLE_MAPS_API_KEY"]
     text_navigation =  session.get("text_navigation")
     if not(text_navigation):
         abort(400, description="ルートが見つかりません")
-    return render_template("text_navigation.html", text_navigation = text_navigation,api_key=api_key)
+    return render_template("text_navigation.html", 
+                           current_location = current_location,
+                           destination = destination,
+                           text_navigation = text_navigation,
+                           api_key=api_key)

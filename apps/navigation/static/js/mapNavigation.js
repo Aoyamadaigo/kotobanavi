@@ -1,6 +1,6 @@
 // static/js/mapNavigation.js
 
-export function createMapDirections(currentLocation, destination, mapElement) {
+export function createMapDirections(currentLocation, destination, mapElement,map, directionsRenderer) {
   if (!currentLocation) {
     throw new Error("currentLocation が指定されていません");
   }
@@ -11,16 +11,17 @@ export function createMapDirections(currentLocation, destination, mapElement) {
     throw new Error("mapElement が指定されていません");
   }
 
-  // Google Maps のインスタンスを作成
-  const map = new google.maps.Map(mapElement, {
-    zoom: 16,
-    center: currentLocation,
-  });
+  if (!map) {
+    throw new Error("map が指定されていません");
+  }
+
+  if (!directionsRenderer) {
+    throw new Error("directionsRenderer が指定されていません");
+  }
+
 
   // Directions API
   const directionsService = new google.maps.DirectionsService();
-  const directionsRenderer = new google.maps.DirectionsRenderer();
-  directionsRenderer.setMap(map);
 
   const request = {
     origin: currentLocation,

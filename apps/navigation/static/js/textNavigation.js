@@ -5,7 +5,7 @@ DirectionsService を使って「テキストの案内」を作るだけのモ�
 */
 
 import { sendFlasktoServer } from "./sendFlaskToServer.js";
-import { stepToFriendly } from "./instructionConvert.js";
+import { getNavigationText } from "./getNavigationText.js";
 
 export function createTextDirections(originLatLng, destination) {
   return new Promise((resolve, reject) => {
@@ -20,7 +20,7 @@ export function createTextDirections(originLatLng, destination) {
       travelMode: google.maps.TravelMode.WALKING,
     };
 
-    directionsService.route(request, async (result, status) => {
+    directionsService.route(request, (result, status) => {
       console.log("[Directions status]", status, result);
 
       if (status !== google.maps.DirectionsStatus.OK) {
@@ -30,23 +30,32 @@ export function createTextDirections(originLatLng, destination) {
 
       const route = result.routes[0];
       const leg = route.legs[0];
+      const steps = leg.steps;
 
-      // ★ ここで stepToFriendly を呼んで、すぐ変換してしまう
       const simpleSteps = [];
-      for (const step of leg.steps) {
-        // Maps JavaScript API の step は step.instructions に HTML が入っている
-        // instructionConvert.js は html_instructions を見るので、
-        // 一旦「名前だけ合わせたラッパオブジェクト」にして渡してもOK
-        const convertedText = await stepToFriendly({
-          html_instructions: step.instructions, // JS API → 変換用
-          maneuver: step.maneuver,             // そのまま
-        });
 
+      if (steps.length < 3) {
+        // 短いルート用の簡易ステップ
+        const onlyStep = steps[0];
         simpleSteps.push({
-          instruction: convertedText,          // ユーザーに見せるテキスト
-          distance_m: step.distance.value,
-          duration_s: step.duration.value,
-        });
+          instruction: "このルートでは、ほぼまっすぐ進んでください",
+          distance_m: onlyStep.distance.value,
+          duration_s: onlyStep.duration.value,
+        })
+      }
+      else {
+        for (let i = 1; i < steps.length; i++) {
+          const prevStep = steps[i - 1];
+          const currentStep = steps[i];
+
+          const text = getNavigationText(prevStep, currentStep);
+
+          simpleSteps.push({
+            instruction: text,
+            distance_m: currentStep.distance.value,
+            duration_s: currentStep.duration.value,
+          });
+        }
       }
 
       const textNavigation = {
@@ -54,8 +63,6 @@ export function createTextDirections(originLatLng, destination) {
         total_duration_s: leg.duration.value,
         steps: simpleSteps,
       };
-
-      // console.log("textNavigation:", textNavigation);
 
       sendFlasktoServer(textNavigation, "/api/save_text_navigation")
         .then(() => resolve(textNavigation))
