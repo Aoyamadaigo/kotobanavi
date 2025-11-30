@@ -1,13 +1,7 @@
-/* 
-static/js/textNavigation.js
-
-DirectionsService を使って「テキストの案内」を作るだけのモジュール
-*/
-
-import { sendFlasktoServer } from "./sendFlaskToServer.js";
 import { getNavigationText } from "./getNavigationText.js";
+import { sendFlasktoServer } from "./sendFlaskToServer.js";
 
-export function createTextDirections(originLatLng, destination,v_user) {
+export function createTextDirections(originLatLng, destination, v_user) {
   return new Promise((resolve, reject) => {
     if (!originLatLng) return reject(new Error("originLatLng が指定されていません"));
     if (!destination) return reject(new Error("destination が指定されていません"));
@@ -34,28 +28,42 @@ export function createTextDirections(originLatLng, destination,v_user) {
 
       const simpleSteps = [];
 
-      if (steps.length < 3) {
-        // 短いルート用の簡易ステップ
-        const onlyStep = steps[0];
+      // ---- 1手目（index = 0） ----
+      if (steps.length > 0) {
+        const firstStep = steps[0];
+
+        // index = 0 を getNavigationText に渡す
+        const firstText = getNavigationText(
+          firstStep,     // prevStep として扱う
+          firstStep,     // currentStep としても同じでOK
+          0,             // index=0
+          v_user,
+        );
+
         simpleSteps.push({
-          instruction: "このルートでは、ほぼまっすぐ進んでください",
-          distance_m: onlyStep.distance.value,
-          duration_s: onlyStep.duration.value,
-        })
+          instruction: firstText,
+          distance_m: firstStep.distance.value,
+          duration_s: firstStep.duration.value,
+        });
       }
-      else {
-        for (let i = 1; i < steps.length; i++) {
-          const prevStep = steps[i - 1];
-          const currentStep = steps[i];
 
-          const text = getNavigationText(prevStep, currentStep,i,v_user,originLatLng);
+      // ---- 2手目以降（index = 1〜）----
+      for (let i = 1; i < steps.length; i++) {
+        const prevStep = steps[i - 1];
+        const currentStep = steps[i];
 
-          simpleSteps.push({
-            instruction: text,
-            distance_m: currentStep.distance.value,
-            duration_s: currentStep.duration.value,
-          });
-        }
+        const text = getNavigationText(
+          prevStep,
+          currentStep,
+          i,
+          v_user,
+        );
+
+        simpleSteps.push({
+          instruction: text,
+          distance_m: currentStep.distance.value,
+          duration_s: currentStep.duration.value,
+        });
       }
 
       const textNavigation = {

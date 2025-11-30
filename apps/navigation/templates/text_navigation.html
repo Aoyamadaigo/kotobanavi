@@ -83,11 +83,28 @@
   const steps = {{ text_navigation.steps | tojson }};
   let currentIndex = 0;
 
+  // ── 距離[m]をざっくり計算する関数 ──
+  function distanceMeters(a, b) {
+    const R = 6378137;
+    const toRad = d => (d * Math.PI) / 180;
+
+    const dLat = toRad(b.lat - a.lat);
+    const dLng = toRad(b.lng - a.lng);
+
+    const A =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(a.lat)) *
+      Math.cos(toRad(b.lat)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(A), Math.sqrt(1 - A));
+    return R * c;
+  }
+
   function renderStep() {
     const step = steps[currentIndex];
     const container = document.getElementById("text-navigation");
 
-    // 進捗（％）も軽く表示
     const progressPercent = Math.round(((currentIndex + 1) / steps.length) * 100);
 
     container.innerHTML = `
@@ -101,7 +118,7 @@
       <p class="fw-semibold mb-2">
         ${step.instruction}
       </p>
-      <p class="text-muted small mb-3">
+      <p class="text-muted small mb-3" id="step-distance-text">
         この区間は約 <span class="fw-semibold">${step.distance_m} m</span> です。
       </p>
 
@@ -135,9 +152,76 @@
     }
   });
 
-  // 初期表示
+  // ── ここから「現在地に応じて自動ステップ切り替え」ロジック ──
+
+  let watchId = null;
+
+  function startAutoStep() {
+    if (!navigator.geolocation) {
+      console.warn("この端末は位置情報に対応していません");
+      return;
+    }
+
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+    }
+
+    watchId = navigator.geolocation.watchPosition(
+      handlePositionUpdate,
+      (err) => {
+        console.error("位置情報の取得に失敗しました", err);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 1000,
+        timeout: 10000,
+      }
+    );
+  }
+
+  function handlePositionUpdate(position) {
+    const userPos = {
+      lat: position.coords.latitude,
+      lng: position.coords.longitude,
+    };
+
+    const step = steps[currentIndex];
+    if (!step || !step.end_location) return;
+
+    const endPos = step.end_location;
+    const dist = distanceMeters(userPos, endPos);
+
+    // 残り距離を画面に反映（任意）
+    const distText = document.getElementById("step-distance-text");
+    if (distText) {
+      distText.innerHTML =
+        `この区間はあと約 <span class="fw-semibold">${Math.round(dist)} m</span> です。`;
+    }
+
+    const THRESHOLD = 18; // 何mまで近づいたら次のステップにするか
+
+    if (dist < THRESHOLD) {
+      if (currentIndex < steps.length - 1) {
+        currentIndex += 1;
+        renderStep();
+      } else {
+        // 最後のステップまで到達
+        if (watchId !== null) {
+          navigator.geolocation.clearWatch(watchId);
+          watchId = null;
+        }
+        if (distText) {
+          distText.textContent = "目的地周辺です。おつかれさまでした。";
+        }
+      }
+    }
+  }
+
+  // 初期表示 & 自動ナビ開始
   renderStep();
+  startAutoStep();
 </script>
+
 
 <!-- サーバーから現在地と目的地を取得 -->
 <script>

@@ -4,80 +4,61 @@ import { toVector } from "./locationToVector.js";
 import { angleBetween } from "./calcurateAngle.js";
 
 function cross(v1, v2) {
-    return v1.x * v2.y - v1.y * v2.x;
+  return v1.x * v2.y - v1.y * v2.x;
 }
 
-// v1, v2 の長さ
-function vecLength(v) {
-    return Math.sqrt(v.x * v.x + v.y * v.y);
-}
+export function getNavigationText(prevStep, currentStep, index, v_user) {
 
-export function getNavigationText(prevStep, currentStep, index, v_user, originLatLng) {
+  // ---- 1手目（準備ステップ） ----
+  if (index === 0) {
 
-    // ---- STEP1 専用ロジック ----
-    if (index === 1 && v_user) {
-
-        // 進むべきルート方向（step0）
-        const v_route = toVector(originLatLng, prevStep.end_location);
-
-        // ユーザーの進行方向（移動ベクトル）
-        const deg = angleBetween(v_user, v_route);
-        const c = cross(v_user, v_route);
-
-        const isRight = c < 0;
-        const isLeft = c > 0;
-
-        if (deg < 15) {
-            return "このまま前の方向に進んでください";
-        }
-        if (deg < 60) {
-            if (isRight) return "ななめ右方向に進んでください";
-            if (isLeft) return "ななめ左方向に進んでください";
-            return "前の方向に進んでください";
-        }
-        if (deg < 120) {
-            if (isRight) return "右方向に進んでください";
-            if (isLeft) return "左方向に進んでください";
-            return "前の方向に進んでください";
-        }
-
-        if (isRight) return "左後ろに向いて進んでください";
-        if (isLeft) return "右後ろに向いて進んでください";
-        return "後ろを向いて進んでください";
+    // v_userがある場合：参考にはするが身体方向は指示しない
+    if (v_user) {
+      return (
+        "地図で青い線が伸びている方向へ歩き始めてみてください。" +
+        "歩き出すと、アプリがあなたの向いている方向をつかんで、次の案内をお知らせします。"
+      );
     }
 
-    // ---- STEP2 以降：従来ロジック ----
+    // v_userがない場合（コンパス不安定・GPS静止）
+    return (
+      "まず、地図で青い線が伸びている方向へ歩き始めてみてください。" +
+      "歩き出すと、アプリがあなたの向いている方向をつかんで、次の案内をお知らせします。"
+    );
+  }
 
-    const v1 = toVector(prevStep.start_location, prevStep.end_location);
-    const v2 = toVector(currentStep.start_location, currentStep.end_location);
+  // ---- 2手目以降 ----
 
-    const deg = angleBetween(v1, v2);
-    const c = cross(v1, v2);
+  const v1 = toVector(prevStep.start_location, prevStep.end_location);
+  const v2 = toVector(currentStep.start_location, currentStep.end_location);
 
-    const straightThreshold = 15;
-    const diagonalThreshold = 60;
-    const sharpTurnThreshold = 110;
+  const deg = angleBetween(v1, v2);
+  const c = cross(v1, v2);
 
-    if (deg < straightThreshold) {
-        return "このまま まっすぐ進んでください";
-    }
+  const straightThreshold = 15;
+  const diagonalThreshold = 60;
+  const sharpTurnThreshold = 130;
 
-    const isRight = c < 0;
-    const isLeft = c > 0;
+  if (deg < straightThreshold) {
+    return "このまま まっすぐ進んでください";
+  }
 
-    if (deg < diagonalThreshold) {
-        if (isRight) return "ななめ右方向に進んでください";
-        if (isLeft) return "ななめ左方向に進んでください";
-        return "このまま まっすぐ進んでください";
-    }
+  const isRight = c < 0;
+  const isLeft = c > 0;
 
-    if (deg < sharpTurnThreshold) {
-        if (isRight) return "右方向に進んでください";
-        if (isLeft) return "左方向に進んでください";
-        return "このまま まっすぐ進んでください";
-    }
+  if (deg < diagonalThreshold) {
+    if (isRight) return "ななめ右方向に進んでください";
+    if (isLeft) return "ななめ左方向に進んでください";
+    return "このまま まっすぐ進んでください";
+  }
 
-    if (isRight) return "左後ろに向いて進んでください";
-    if (isLeft) return "右後ろに向いて進んでください";
-    return "後ろを向いて進んでください";
+  if (deg < sharpTurnThreshold) {
+    if (isRight) return "右方向に進んでください";
+    if (isLeft) return "左方向に進んでください";
+    return "このまま まっすぐ進んでください";
+  }
+
+  if (isRight) return "左後ろに振り返って進んでください";
+  if (isLeft) return "右後ろに振り返って進んでください";
+  return "後ろを向いて進んでください";
 }
