@@ -1,6 +1,6 @@
 // static/js/mapNavigation.js
 
-export function createMapDirections(currentLocation, destination, mapElement,map, directionsRenderer) {
+export function createMapDirections(currentLocation, destination, mapElement, map, directionsRenderer) {
   if (!currentLocation) {
     throw new Error("currentLocation が指定されていません");
   }
@@ -39,5 +39,18 @@ export function createMapDirections(currentLocation, destination, mapElement,map
 
     // ルート描画
     directionsRenderer.setDirections(result);
+
+    //各 step の「終点」に番号マーカーを出す
+    const route = result.routes[0];
+    const leg = route.legs[0];
+    const steps = leg.steps;
+    
+    steps.forEach((s, i) => {
+      new google.maps.Marker({
+        position: s.end_location,
+        map: map,
+        label: String(i),  // "0", "1", "2", ...
+      });
+    });
   });
 }

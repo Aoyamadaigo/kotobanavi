@@ -10,11 +10,11 @@ function cross(v1, v2) {
 export function getNavigationText(prevStep, currentStep, index) {
   // ---- 1手目（準備ステップ） ----
   if (index === 0) {
-    
-    return (
-      "地図で青い線が伸びている方向へ歩いてください。" +
-      "現在地が移動するので、次のステップに切り替わるまで青い線に沿って進んでください"
-    );
+
+    return ` 
+      地図上の青い線が伸びている方向へ歩いてください。<br>
+      現在地が動くので、0番まで歩き、次ステップに進んでください`
+      ;
   }
 
   // ---- 2手目以降 ----

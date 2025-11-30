@@ -45,7 +45,6 @@ export function createTextDirections(originLatLng, destinationLatLng, v_user) {
           firstStep, // prevStep
           firstStep, // currentStep
           0,         // index=0 → 準備ステップ扱い
-          v_user
         );
 
         simpleSteps.push({
@@ -66,14 +65,13 @@ export function createTextDirections(originLatLng, destinationLatLng, v_user) {
       // ─────────────────────
       //
       for (let i = 1; i < steps.length; i++) {
-        const prevStep = steps[i - 1];
+        const prevStep = steps[i-1];
         const currentStep = steps[i];
 
         const text = getNavigationText(
           prevStep,
           currentStep,
-          i,      // index=1,2,3… → 「2手目以降」のロジックで右/左判定される
-          v_user
+          i,      // 
         );
 
         simpleSteps.push({
