@@ -1,4 +1,4 @@
-// getNavigationText.js
+// static/js/getNavigationText.js
 
 import { toVector } from "./locationToVector.js";
 import { angleBetween } from "./calcurateAngle.js";
@@ -7,28 +7,17 @@ function cross(v1, v2) {
   return v1.x * v2.y - v1.y * v2.x;
 }
 
-export function getNavigationText(prevStep, currentStep, index, v_user) {
-
+export function getNavigationText(prevStep, currentStep, index) {
   // ---- 1手目（準備ステップ） ----
   if (index === 0) {
-
-    // v_userがある場合：参考にはするが身体方向は指示しない
-    if (v_user) {
-      return (
-        "地図で青い線が伸びている方向へ歩き始めてみてください。" +
-        "歩き出すと、アプリがあなたの向いている方向をつかんで、次の案内をお知らせします。"
-      );
-    }
-
-    // v_userがない場合（コンパス不安定・GPS静止）
+    
     return (
-      "まず、地図で青い線が伸びている方向へ歩き始めてみてください。" +
-      "歩き出すと、アプリがあなたの向いている方向をつかんで、次の案内をお知らせします。"
+      "地図で青い線が伸びている方向へ歩いてください。" +
+      "現在地が移動するので、次のステップに切り替わるまで青い線に沿って進んでください"
     );
   }
 
   // ---- 2手目以降 ----
-
   const v1 = toVector(prevStep.start_location, prevStep.end_location);
   const v2 = toVector(currentStep.start_location, currentStep.end_location);
 

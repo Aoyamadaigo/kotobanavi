@@ -1,16 +1,18 @@
+// static/js/textNavigation.js
+
 import { getNavigationText } from "./getNavigationText.js";
 import { sendFlasktoServer } from "./sendFlaskToServer.js";
 
-export function createTextDirections(originLatLng, destination, v_user) {
+export function createTextDirections(originLatLng, destinationLatLng, v_user) {
   return new Promise((resolve, reject) => {
     if (!originLatLng) return reject(new Error("originLatLng が指定されていません"));
-    if (!destination) return reject(new Error("destination が指定されていません"));
+    if (!destinationLatLng) return reject(new Error("destination が指定されていません"));
 
     const directionsService = new google.maps.DirectionsService();
 
     const request = {
       origin: originLatLng,
-      destination: destination,
+      destination: destinationLatLng,
       travelMode: google.maps.TravelMode.WALKING,
     };
 
@@ -26,28 +28,43 @@ export function createTextDirections(originLatLng, destination, v_user) {
       const leg = route.legs[0];
       const steps = leg.steps;
 
+      if (!steps.length) {
+        return reject(new Error("ルートのステップが空です"));
+      }
+
       const simpleSteps = [];
 
-      // ---- 1手目（index = 0） ----
-      if (steps.length > 0) {
+      // ─────────────────────
+      // ① 準備ステップ（index 関係なく、最初に1つだけ）
+      // ─────────────────────
+      {
         const firstStep = steps[0];
 
-        // index = 0 を getNavigationText に渡す
-        const firstText = getNavigationText(
-          firstStep,     // prevStep として扱う
-          firstStep,     // currentStep としても同じでOK
-          0,             // index=0
-          v_user,
+        // getNavigationText の「index=0」特別処理を使う
+        const prepText = getNavigationText(
+          firstStep, // prevStep
+          firstStep, // currentStep
+          0,         // index=0 → 準備ステップ扱い
+          v_user
         );
 
         simpleSteps.push({
-          instruction: firstText,
+          is_prepare: true,          // 準備ステップかどうかのフラグ
+          step_no: null,             // 実ステップ番号ではない
+          instruction: prepText,     // 準備ステップ用の文言
           distance_m: firstStep.distance.value,
           duration_s: firstStep.duration.value,
+          end_location: {
+            lat: firstStep.end_location.lat(),
+            lng: firstStep.end_location.lng(),
+          },
         });
       }
 
-      // ---- 2手目以降（index = 1〜）----
+      // ─────────────────────
+      // ② 実ステップ（曲がり案内） index=1〜
+      // ─────────────────────
+      //
       for (let i = 1; i < steps.length; i++) {
         const prevStep = steps[i - 1];
         const currentStep = steps[i];
@@ -55,14 +72,20 @@ export function createTextDirections(originLatLng, destination, v_user) {
         const text = getNavigationText(
           prevStep,
           currentStep,
-          i,
-          v_user,
+          i,      // index=1,2,3… → 「2手目以降」のロジックで右/左判定される
+          v_user
         );
 
         simpleSteps.push({
-          instruction: text,
+          is_prepare: false,
+          step_no: i,                 // 実ステップ番号（1,2,3…）
+          instruction: text,          // 右/左/ななめ/まっすぐ など
           distance_m: currentStep.distance.value,
           duration_s: currentStep.duration.value,
+          end_location: {
+            lat: currentStep.end_location.lat(),
+            lng: currentStep.end_location.lng(),
+          },
         });
       }
 
@@ -72,6 +95,7 @@ export function createTextDirections(originLatLng, destination, v_user) {
         steps: simpleSteps,
       };
 
+      // Flask に保存
       sendFlasktoServer(textNavigation, "/api/save_text_navigation")
         .then(() => resolve(textNavigation))
         .catch(reject);

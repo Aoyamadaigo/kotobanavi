@@ -20,13 +20,12 @@ function initMap() {
     position: currentLocation,
     map: map,
     icon: {
-      path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, // ← 矢印アイコン
-      scale: 6,
+      path: google.maps.SymbolPath.CIRCLE, // ← 矢印アイコン
+      scale: 8,
       fillColor: "#4285F4",
       fillOpacity: 1,
       strokeColor: "white",
       strokeWeight: 2,
-      rotation: 0, // ← 最初の向き
     },
   });
 

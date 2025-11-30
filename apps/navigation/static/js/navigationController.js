@@ -1,10 +1,11 @@
 import { getNavigationText } from "./getNavigationText.js";
 import { toVector } from "./locationToVector.js";
 
-let steps = [];              // Directions API から取得した steps
-let currentStepIndex = 0;    // 今どのステップか
-let watchId = null;          // geolocation のID
-let lastUserPos = null;      // 一つ前のユーザー位置（v_user用）
+let steps = [];              // Directions API から取得した steps（Google生データ）
+let textSteps = [];          // 事前に作った simpleSteps（instruction, distance_m など）
+let currentStepIndex = 0;
+let watchId = null;
+let lastUserPos = nul
 
 // 距離を計算（Googleのgeometry使えるならそれでOK）
 export function distanceMeters(latLng1, latLng2) {
@@ -17,17 +18,17 @@ export function distanceMeters(latLng1, latLng2) {
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(latLng1.lat)) *
-      Math.cos(toRad(latLng2.lat)) *
-      Math.sin(dLng / 2) ** 2;
+    Math.cos(toRad(latLng2.lat)) *
+    Math.sin(dLng / 2) ** 2;
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
 
-// DirectionsService のレスポンスをセット
-export function setRoute(route) {
-  // 1つ目のルートの 0番目の leg の steps を使う例
+// DirectionsService のレスポンス & テキスト案内をセット
+export function setRoute(route, simpleSteps) {
   steps = route.legs[0].steps;
+  textSteps = simpleSteps;     // 
   currentStepIndex = 0;
 }
 
@@ -56,58 +57,50 @@ export function startAutoNavigation() {
 }
 
 // ジオロケーション更新時に呼ばれる
-function handlePositionUpdate(position) {
+export function handlePositionUpdate(position) {
   const userCurrentLocation = {
     lat: position.coords.latitude,
     lng: position.coords.longitude,
   };
 
-  // v_user を計算（前回位置があれば）
+  // v_user は今「使わない」ならそのまま残してもOK・後で拡張用
   let v_user = null;
   if (lastUserPos) {
     v_user = toVector(lastUserPos, userCurrentLocation);
   }
   lastUserPos = userCurrentLocation;
 
-  // 現在のステップ
   const currentStep = steps[currentStepIndex];
   const prevStep = steps[Math.max(currentStepIndex - 1, 0)];
 
-  // ステップ終点との距離
-  const endLoc = currentStep.end_location; // DirectionsのLatLng
+  const endLoc = currentStep.end_location;
   const endLatLng = { lat: endLoc.lat(), lng: endLoc.lng() };
 
   const dist = distanceMeters(userCurrentLocation, endLatLng);
-  // console.log("現在ステップの終点まで", dist, "m");
 
-  // ---- ここでテキスト案内を更新 ----
-  const text = getNavigationText(
-    prevStep,
-    currentStep,
-    currentStepIndex,
-    v_user,
-    userCurrentLocation
-  );
+  // 事前生成されたテキストをそのまま使う
+  const currentText =
+    textSteps[currentStepIndex]?.instruction ??
+    "案内中です。しばらく直進してください。";
 
-  updateUIDirections(text, dist); // DOM書き換え用
+  updateUIDirections(currentText, dist);
 
   // ---- ステップ切り替え判定 ----
-  const STEP_REACH_THRESHOLD = 18; 
+  const STEP_REACH_THRESHOLD = 10;
 
   if (dist < STEP_REACH_THRESHOLD) {
-    // 次のステップへ
     if (currentStepIndex < steps.length - 1) {
       currentStepIndex += 1;
       console.log("次のステップへ →", currentStepIndex);
     } else {
-      // 最終ステップ到達
       finishNavigation();
     }
   }
 }
 
+
 // 案内完了処理
-function finishNavigation() {
+export function finishNavigation() {
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
