@@ -79,7 +79,6 @@
 
 <!-- ステップを表示するためのスクリプト -->
 <script>
-  // Python側で作ったテキスト案内のステップ（instruction, distance_m, duration_s, end_location）
   const steps = {{ text_navigation.steps | tojson }};
   let currentIndex = 0;
 

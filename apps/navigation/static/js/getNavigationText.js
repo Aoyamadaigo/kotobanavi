@@ -26,7 +26,7 @@ export function getNavigationText(prevStep, currentStep, index) {
 
   const straightThreshold = 15;
   const diagonalThreshold = 60;
-  const sharpTurnThreshold = 130;
+  const sharpTurnThreshold = 110;
 
   if (deg < straightThreshold) {
     return "このまま まっすぐ進んでください";
